@@ -57,6 +57,7 @@ export const stream_schema = z.object({
     is_archived: z.boolean(),
     is_recently_active: z.boolean(),
     is_web_public: z.boolean(),
+    mandatory_email_notifications: z.boolean(),
     message_retention_days: z.nullable(z.number()),
     name: z.string(),
     rendered_description: z.string(),

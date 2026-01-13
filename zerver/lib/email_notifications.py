@@ -547,7 +547,9 @@ def do_send_missedmessage_events_reply_in_zulip(
                 }
             )
         assert message.recipient.type == Recipient.STREAM
-        stream = Stream.objects.only("id", "name").get(id=message.recipient.type_id)
+        stream = Stream.objects.only("id", "name", "mandatory_email_notifications").get(
+            id=message.recipient.type_id
+        )
         narrow_url = message_link_url(
             user_profile.realm, MessageDict.wide_dict(message), conversation_link=not mention
         )
@@ -558,6 +560,7 @@ def do_send_missedmessage_events_reply_in_zulip(
             channel_name=stream.name,
             topic_name=display_topic_name,
             topic_resolved=topic_resolved,
+            mandatory_email_notifications=stream.mandatory_email_notifications,
         )
     else:
         raise AssertionError("Invalid messages!")

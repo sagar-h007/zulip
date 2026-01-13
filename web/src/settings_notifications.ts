@@ -12,23 +12,23 @@ import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
-import {$t, $t_html} from "./i18n.ts";
+import { $t, $t_html } from "./i18n.ts";
 import * as message_notifications from "./message_notifications.ts";
-import {page_params} from "./page_params.ts";
+import { page_params } from "./page_params.ts";
 import * as settings_banner from "./settings_banner.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
-import type {SettingsPanel} from "./settings_preferences.ts";
+import type { SettingsPanel } from "./settings_preferences.ts";
 import * as settings_ui from "./settings_ui.ts";
-import {realm} from "./state_data.ts";
+import { realm } from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_settings_api from "./stream_settings_api.ts";
-import type {SubData} from "./stream_settings_api.ts";
+import type { SubData } from "./stream_settings_api.ts";
 import * as stream_settings_data from "./stream_settings_data.ts";
-import {stream_specific_notification_settings_schema} from "./stream_types.ts";
+import { stream_specific_notification_settings_schema } from "./stream_types.ts";
 import * as sub_store from "./sub_store.ts";
-import type {StreamSubscription} from "./sub_store.ts";
+import type { StreamSubscription } from "./sub_store.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread_ui from "./unread_ui.ts";
 import {
@@ -49,7 +49,7 @@ const DESKTOP_NOTIFICATIONS_BANNER: banners.Banner = {
     }),
     buttons: [
         {
-            label: $t({defaultMessage: "Enable notifications"}),
+            label: $t({ defaultMessage: "Enable notifications" }),
             custom_classes: "desktop-notifications-request",
             variant: "solid",
         },
@@ -65,7 +65,7 @@ const MOBILE_PUSH_NOTIFICATION_BANNER: banners.Banner = {
     }),
     buttons: [
         {
-            label: $t({defaultMessage: "Learn more"}),
+            label: $t({ defaultMessage: "Learn more" }),
             custom_classes: "banner-external-link",
             variant: "subtle",
         },
@@ -90,15 +90,19 @@ function rerender_ui(): void {
     stream_ids_with_custom_notifications.clear();
 
     for (const stream of unmatched_streams) {
+        let is_disabled = settings_config.all_notifications(user_settings).disabled_notification_settings;
+        if (stream.mandatory_email_notifications) {
+            is_disabled = { ...is_disabled, message_content_in_email_notifications: true };
+            stream.email_notifications = true;
+        }
+
         $unmatched_streams_table.append(
             $(
                 render_stream_specific_notification_row({
                     stream,
                     stream_specific_notification_settings:
                         settings_config.stream_specific_notification_settings,
-                    is_disabled:
-                        settings_config.all_notifications(user_settings)
-                            .disabled_notification_settings,
+                    is_disabled,
                     muted: muted_stream_ids.includes(stream.stream_id),
                     push_notifications_disabled: !realm.realm_push_notifications_enabled,
                 }),
@@ -110,12 +114,12 @@ function rerender_ui(): void {
     if (unmatched_streams.length === 0) {
         $unmatched_streams_table.css("display", "none");
         $("#customize_stream_notifications_widget .dropdown_widget_value").text(
-            $t({defaultMessage: "Customize a channel"}),
+            $t({ defaultMessage: "Customize a channel" }),
         );
     } else {
         $unmatched_streams_table.css("display", "table-row-group");
         $("#customize_stream_notifications_widget .dropdown_widget_value").text(
-            $t({defaultMessage: "Customize another channel"}),
+            $t({ defaultMessage: "Customize another channel" }),
         );
     }
     update_desktop_notification_banner();
@@ -231,7 +235,7 @@ function stream_notification_setting_changed(target: HTMLInputElement, stream_id
 
     const sub = sub_store.get(stream_id);
     if (!sub) {
-        blueslip.error("stream_notification_setting_changed() failed id lookup", {stream_id});
+        blueslip.error("stream_notification_setting_changed() failed id lookup", { stream_id });
         return;
     }
 
@@ -240,7 +244,7 @@ function stream_notification_setting_changed(target: HTMLInputElement, stream_id
     sub[setting] ??= user_settings[settings_config.generalize_stream_notification_setting[setting]];
     stream_settings_api.set_stream_property(
         sub,
-        {property: setting, value: target.checked},
+        { property: setting, value: target.checked },
         $status_element,
     );
 }
@@ -278,7 +282,7 @@ function change_state_of_customize_stream_notifications_widget(
 function get_streams_to_customize_notifications(): dropdown_widget.Option[] {
     return stream_data
         .get_options_for_dropdown_widget()
-        .filter(({stream}) => !stream_ids_with_custom_notifications.has(stream.stream_id));
+        .filter(({ stream }) => !stream_ids_with_custom_notifications.has(stream.stream_id));
 }
 
 function render_customize_stream_notifications_widget(): void {
@@ -293,7 +297,7 @@ function render_customize_stream_notifications_widget(): void {
 }
 
 export function do_reset_stream_notifications(elem: HTMLElement, sub: StreamSubscription): void {
-    const data: SubData = [{stream_id: sub.stream_id, property: "is_muted", value: false}];
+    const data: SubData = [{ stream_id: sub.stream_id, property: "is_muted", value: false }];
     for (const [per_stream_setting_name, global_setting_name] of Object.entries(
         settings_config.generalize_stream_notification_setting,
     )) {
@@ -318,10 +322,10 @@ function reset_stream_notifications(elem: HTMLElement): void {
     const sub = sub_store.get(stream_id);
     assert(sub !== undefined);
 
-    const html_body = render_confirm_reset_stream_notifications({sub});
+    const html_body = render_confirm_reset_stream_notifications({ sub });
 
     confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Reset to default notifications?"}),
+        html_heading: $t_html({ defaultMessage: "Reset to default notifications?" }),
         html_body,
         id: "confirm_reset_stream_notifications_modal",
         on_click() {
@@ -336,7 +340,7 @@ export function set_up(settings_panel: SettingsPanel): void {
     assert(settings_panel.notification_sound_elem !== null);
     const $notification_sound_elem = $<HTMLAudioElement>(settings_panel.notification_sound_elem);
     const for_realm_settings = settings_panel.for_realm_settings;
-    const $notification_sound_dropdown = $container.find<HTMLSelectElement & {type: "select-one"}>(
+    const $notification_sound_dropdown = $container.find<HTMLSelectElement & { type: "select-one" }>(
         "select:not([multiple]).setting_notification_sound",
     );
 
@@ -506,7 +510,7 @@ export function set_up(settings_panel: SettingsPanel): void {
                 $input_elem.prop("checked", user_settings[setting_name]);
 
                 confirm_dialog.launch({
-                    html_heading: $t_html({defaultMessage: "Disable notifications?"}),
+                    html_heading: $t_html({ defaultMessage: "Disable notifications?" }),
                     html_body,
                     on_click() {
                         change_notification_setting(
@@ -532,7 +536,7 @@ export function set_up(settings_panel: SettingsPanel): void {
     // organization-level defaults.
     $container.find(".send_test_notification").on("click", () => {
         message_notifications.send_test_notification(
-            $t({defaultMessage: "This is a test notification from Zulip."}),
+            $t({ defaultMessage: "This is a test notification from Zulip." }),
         );
     });
 
@@ -634,7 +638,7 @@ export function initialize(): void {
 
         stream_settings_api.set_stream_property(
             sub,
-            {property: "is_muted", value: !sub.is_muted},
+            { property: "is_muted", value: !sub.is_muted },
             $row.closest(".subsection-parent").find(".alert-notification"),
         );
     });

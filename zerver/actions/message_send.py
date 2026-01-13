@@ -258,7 +258,9 @@ def get_recipient_info(
     stream_wildcard_mention_in_followed_topic_user_ids: set[int] = set()
     muted_sender_user_ids: set[int] = get_muting_users(sender_id)
     topic_participant_user_ids: set[int] = set()
+    topic_participant_user_ids: set[int] = set()
     sender_muted_stream: bool | None = None
+    mandatory_email_notifications: bool = False
 
     if recipient.type == Recipient.PERSONAL:
         # The sender and recipient may be the same id, so
@@ -271,6 +273,9 @@ def get_recipient_info(
         # stream_topic.  We may eventually want to have different versions
         # of this function for different message types.
         assert stream_topic is not None
+
+        stream_obj = get_stream_by_id_for_sending_message(realm_id, stream_topic.stream_id)
+        mandatory_email_notifications = stream_obj.mandatory_email_notifications
 
         if possible_topic_wildcard_mention:
             # A topic participant is anyone who either sent or reacted to messages in the topic.
@@ -338,6 +343,11 @@ def get_recipient_info(
         user_id_to_visibility_policy = stream_topic.user_id_to_visibility_policy_dict()
 
         def notification_recipients(setting: str) -> set[int]:
+            if setting == "email_notifications" and mandatory_email_notifications:
+                # If email notifications are mandatory, we ignore the user's
+                # settings and always send email notifications.
+                return {row["user_profile_id"] for row in subscription_rows}
+
             return {
                 row["user_profile_id"]
                 for row in subscription_rows

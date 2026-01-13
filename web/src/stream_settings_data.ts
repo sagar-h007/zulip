@@ -1,13 +1,13 @@
 import * as hash_util from "./hash_util.ts";
 import * as peer_data from "./peer_data.ts";
-import type {User} from "./people.ts";
+import type { User } from "./people.ts";
 import * as settings_config from "./settings_config.ts";
-import {current_user} from "./state_data.ts";
+import { current_user } from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
-import type {StreamSpecificNotificationSettings, StreamSubscription} from "./sub_store.ts";
+import type { StreamSpecificNotificationSettings, StreamSubscription } from "./sub_store.ts";
 import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
-import {user_settings} from "./user_settings.ts";
+import { user_settings } from "./user_settings.ts";
 import * as util from "./util.ts";
 
 export type SettingsSubscription = StreamSubscription & {
@@ -101,6 +101,7 @@ export function get_unmatched_streams_for_notification_settings(): ({
     color: string;
     invite_only: boolean;
     is_web_public: boolean;
+    mandatory_email_notifications: boolean;
 })[] {
     const subscribed_rows = stream_data.subscribed_subs().filter((sub) => !sub.is_archived);
     subscribed_rows.sort((a, b) => util.strcmp(a.name, b.name));
@@ -113,7 +114,7 @@ export function get_unmatched_streams_for_notification_settings(): ({
         ): boolean {
             const default_setting =
                 user_settings[
-                    settings_config.generalize_stream_notification_setting[notification_name]
+                settings_config.generalize_stream_notification_setting[notification_name]
                 ];
             const stream_setting = stream_data.receives_notifications(
                 row.stream_id,
@@ -142,6 +143,7 @@ export function get_unmatched_streams_for_notification_settings(): ({
                 color: row.color,
                 invite_only: row.invite_only,
                 is_web_public: row.is_web_public,
+                mandatory_email_notifications: row.mandatory_email_notifications,
             });
         }
     }

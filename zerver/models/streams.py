@@ -157,6 +157,7 @@ class Stream(models.Model):
     # determine whether they might need to display "show all topics" for a
     # stream based on what messages they have cached.
     first_message_id = models.IntegerField(null=True, db_index=True)
+    mandatory_email_notifications = models.BooleanField(default=False)
 
     LAST_ACTIVITY_DAYS_BEFORE_FOR_ACTIVE = 180
 

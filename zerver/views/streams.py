@@ -313,6 +313,7 @@ def update_stream_backend(
     new_name: str | None = None,
     stream_id: PathOnly[int],
     topics_policy: TopicsPolicy = None,
+    mandatory_email_notifications: Json[bool] | None = None,
 ) -> HttpResponse:
     # Most settings updates only require metadata access, not content
     # access. We will check for content access further when and where
@@ -447,6 +448,13 @@ def update_stream_backend(
         can_delete_any_message_group is not None or can_delete_own_message_group is not None
     ) and not user_profile.can_set_delete_message_policy():
         raise JsonableError(_("Insufficient permission"))
+
+    if mandatory_email_notifications is not None:
+        if not user_profile.is_realm_admin:
+            raise OrganizationAdministratorRequiredError
+        do_set_stream_property(
+            stream, "mandatory_email_notifications", mandatory_email_notifications, user_profile
+        )
 
     if description is not None:
         do_change_stream_description(stream, description, acting_user=user_profile)
@@ -701,6 +709,7 @@ def create_channel(
     name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)],
     subscribers: Json[list[int]],
     topics_policy: Json[TopicsPolicy] = None,
+    mandatory_email_notifications: Json[bool] = False,
 ) -> HttpResponse:
     realm = user_profile.realm
     request_settings_dict = locals()
@@ -769,6 +778,7 @@ def create_channel(
         can_resolve_topics_group=group_settings_map["can_resolve_topics_group"],
         folder=folder,
         topics_policy=topics_policy_value,
+        mandatory_email_notifications=mandatory_email_notifications,
     )
 
     if is_default_stream:

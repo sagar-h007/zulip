@@ -189,6 +189,7 @@ class RawStreamDict(TypedDict):
     message_retention_days: int | None
     name: str
     rendered_description: str
+    mandatory_email_notifications: bool
     stream_post_policy: int
     subscriber_count: int
     topics_policy: str
@@ -248,6 +249,7 @@ class SubscriptionStreamDict(TypedDict):
     is_web_public: bool
     message_retention_days: int | None
     name: str
+    mandatory_email_notifications: bool
     pin_to_top: bool
     push_notifications: bool | None
     rendered_description: str
@@ -286,6 +288,7 @@ class NeverSubscribedStreamDict(TypedDict):
     is_web_public: bool
     message_retention_days: int | None
     name: str
+    mandatory_email_notifications: bool
     rendered_description: str
     stream_id: int
     stream_post_policy: int

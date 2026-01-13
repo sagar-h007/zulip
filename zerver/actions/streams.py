@@ -1192,6 +1192,13 @@ def do_change_subscription_property(
         database_property_name = "is_muted"
         database_value = not value
 
+    if (
+        database_property_name == "email_notifications"
+        and not database_value
+        and stream.mandatory_email_notifications
+    ):
+        raise JsonableError(_("Email notifications are mandatory for this channel."))
+
     old_value = getattr(sub, database_property_name)
     setattr(sub, database_property_name, database_value)
     sub.save(update_fields=[database_property_name])

@@ -102,7 +102,10 @@ class StreamDict(TypedDict, total=False):
     can_remove_subscribers_group: UserGroup | None
     can_resolve_topics_group: UserGroup | None
     can_subscribe_group: UserGroup | None
+    can_subscribe_group: UserGroup | None
     folder: ChannelFolder | None
+    mandatory_email_notifications: bool
+
 
 
 def get_stream_permission_policy_key(
@@ -388,6 +391,7 @@ def create_stream_if_needed(
     folder: ChannelFolder | None = None,
     acting_user: UserProfile | None = None,
     anonymous_group_membership: dict[int, UserGroupMembersData] | None = None,
+    mandatory_email_notifications: bool = False,
 ) -> tuple[Stream, bool]:
     history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
         invite_only, history_public_to_subscribers
@@ -428,7 +432,9 @@ def create_stream_if_needed(
             history_public_to_subscribers=history_public_to_subscribers,
             message_retention_days=message_retention_days,
             folder=folder,
+            folder=folder,
             topics_policy=topics_policy,
+            mandatory_email_notifications=mandatory_email_notifications,
             **group_setting_values,
         ),
     )
@@ -522,6 +528,7 @@ def create_streams_if_needed(
             folder=stream_dict.get("folder", None),
             acting_user=acting_user,
             anonymous_group_membership=anonymous_group_membership,
+            mandatory_email_notifications=stream_dict.get("mandatory_email_notifications", False),
         )
 
         if created:
@@ -1880,6 +1887,7 @@ def stream_to_dict(
         is_web_public=stream.is_web_public,
         message_retention_days=stream.message_retention_days,
         name=stream.name,
+        mandatory_email_notifications=stream.mandatory_email_notifications,
         rendered_description=stream.rendered_description,
         stream_id=stream.id,
         stream_post_policy=stream_post_policy,

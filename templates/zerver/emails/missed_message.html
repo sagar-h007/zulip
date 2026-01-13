@@ -39,6 +39,8 @@
     {% trans %}You are receiving this because everyone was mentioned in #{{ channel_name }}.{% endtrans %}<br />
     {% elif followed_topic_email_notify %}
     {% trans %}You are receiving this because you have email notifications enabled for topics you follow.{% endtrans %}<br />
+    {% elif mandatory_email_notifications %}
+    {% trans %}You are receiving this email because it is mandatory for the #{{ channel_name }} channel.{% endtrans %}<br />
     {% elif stream_email_notify %}
     {% trans %}You are receiving this because you have email notifications enabled for #{{ channel_name }}.{% endtrans %}<br />
     {% endif %}
